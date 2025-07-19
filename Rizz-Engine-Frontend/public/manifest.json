@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Rizz Engine Extension",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ]
+}
