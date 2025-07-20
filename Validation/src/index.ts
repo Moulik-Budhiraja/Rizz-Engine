@@ -3,35 +3,50 @@ import getStaticEval from "./staticEval"
 import { formatLLMResponse } from "./util"
 
 let messages = [
-
-{ role: "party1", message: "Hey, you're cute. Mind if I take you out sometime?" },
-
-{ role: "party2", message: "Wow not even a pickup line? lol" },
-
-{ role: "party1", message: "Didn't think I needed one, you're already smiling. 😉"},
-
-{ role: "party2", message: "okay that was kinda smooth lol"},
-
-{ role: "party1", message: "It's ok, I can explain it on our date 😉"}
-
+    { role: "party1", message: "Hi mom can i borrow 100 dollars" },
+    { role: "party2", message: "did you do the chores?" },
+    { role: "party1", message: "Yep! And I cleaned my room!" }
 ]
 
-const relationship = "We are random people I don't know her"
-const goal = "Get a date"
+const relationship = "she's my mom"
+const goal = "i want 100 dollars"
 
-const responses = JSON.parse(formatLLMResponse(await getNextPositions(
-    messages,
-    relationship
-)))
+async function search(messages: any[], relationship: string, goal: string, depth: number) {
 
-for (const response of responses)
-{
-    messages.push({role : messages[messages.length-2].role, message: response.next_message})
+    if (depth == 5) {
+        // Base case: When we've reached max depth, evaluate the current state
+        const evaluation = await getStaticEval(messages, goal);
+        console.log("Leaf node reached:");
+        console.log("Messages:", messages);
+        console.log("Evaluation:", evaluation);
+        return evaluation; // Don't return any value
+    }
 
-    console.log("SEARCHING");
-    console.log(messages);
-    console.log(await getStaticEval(messages, goal));
-
-    messages.pop()
+    // Get potential next positions in the conversation as a string
+    const rawResponse = await getNextPositions(messages, relationship, messages[messages.length-2].role == "party1" ? goal : "NONE");
     
+    // Format the LLM response
+    const formattedResponse = formatLLMResponse(rawResponse);
+    
+    // Convert formatted string to JSON
+    const nextPositions = JSON.parse(formattedResponse);
+    
+    // Search all possible next positions in parallel
+    let evaluations = await Promise.all(
+        nextPositions.map(async (nextPosition) => {
+            // Create a new messages array with the next position added
+            const newMessages = [...messages, {role: messages[messages.length-2].role, message: nextPosition.next_message}];
+            
+            // Recursively search from this new state without caring about return value
+            return await search(newMessages, relationship, goal, depth + 1);
+        })
+    );
+
+    // Calculate the average evaluation score
+    const sum = evaluations.reduce((acc, curr) => acc + curr, 0);
+    const average = evaluations.length > 0 ? sum / evaluations.length : 0;
+    
+    return average;
 }
+
+console.log(await search(messages, relationship, goal, 1))

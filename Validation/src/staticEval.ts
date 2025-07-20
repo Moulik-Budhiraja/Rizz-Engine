@@ -31,13 +31,23 @@ export default async function getStaticEval(context: any, goal: any) {
     GOAL:
     ${goal}`;
 
-    // Generate responses
-    const { text } = await generateText({
-        model: google("models/gemini-2.0-flash-exp"),
-        system: systemPrompt,
-        prompt: prompt,
-        temperature: 0.8
-    });
+    let text
 
-    return text;
+    // Generate responses
+    try {
+        const res = await generateText({
+            model: google("models/gemini-2.5-flash"),
+            system: systemPrompt,
+            prompt: prompt,
+            temperature: 0.8
+        });
+
+        text = res.text
+
+    } catch {
+        console.log("retrying...");
+        return await getStaticEval(context, goal)
+    }
+
+    return Number(text);
 }

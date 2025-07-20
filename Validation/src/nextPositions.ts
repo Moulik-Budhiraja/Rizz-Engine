@@ -2,7 +2,7 @@ import "dotenv/config"
 import { generateText } from "ai"
 import { google } from "@ai-sdk/google"
 
-export default async function getNextPositions(context: any, relationship: any) {
+export default async function getNextPositions(context: any, relationship: string, goal: string) {
 
     // System prompt: use provided engagement level to guide tone
     const systemPrompt = 
@@ -12,7 +12,7 @@ export default async function getNextPositions(context: any, relationship: any) 
     Try to embody exactly how they speak.
 
     💬 Your task:
-    Generate 5 realistic next replies from the person who is expected to respond next, based on:
+    Generate 3 realistic next replies from the person who is expected to respond next, based on:
     - The prior conversation (tone, pacing, social cues)
     - The relationship between participants (e.g., “stranger-to-stranger in professional context”)
 
@@ -29,13 +29,13 @@ export default async function getNextPositions(context: any, relationship: any) 
     Do not default to trying to continue the conversation — sometimes real people just stop replying.
     Mild profanity, slang, and dry sarcasm are acceptable if appropriate to the situation.
 
-    **GENERATE EXACTLY 5 NEW MESSAGES:**
+    **GENERATE EXACTLY 3 NEW MESSAGES:**
 
     EXACT OUTPUT FORMAT:
 
     [
         {
-            "next_message" : "...",
+            "next_message" : "..."
         },
         ...
     ]
@@ -53,12 +53,14 @@ export default async function getNextPositions(context: any, relationship: any) 
     const prompt = `
     CONVERSATION HISTORY:
     ${conversationContext}
+    GOAL:
+    ${goal}
     CURRENTLY ANSWERING PARTY:
     ${context[context.length-2].role}`;
 
     // Generate responses
     const { text } = await generateText({
-        model: google("models/gemini-2.0-flash-exp"),
+        model: google("models/gemini-2.5-flash"),
         system: systemPrompt,
         prompt: prompt,
         temperature: 0.8
