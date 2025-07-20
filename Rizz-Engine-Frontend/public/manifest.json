@@ -1,16 +1,24 @@
 {
   "manifest_version": 3,
-  "version": "1.0.0",
-  "name": "Rizz Engine Extension",
+  "name": "Rizz Engine",
+  "version": "1.0",
+  "description": "HackThe6ix 2025",
   "action": {
-    "default_popup": "index.html"
+    "default_title": "Toggle Rizz Engine Panel"
   },
-  "permissions": [
-    "activeTab",
-    "scripting"
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.instagram.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
   ],
-  "host_permissions": [
-    "https://*/*",
-    "http://*/*"
-  ]
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["sidePanel", "tabs"],
+  "host_permissions": ["https://instagram.com/*", "https://www.instagram.com/*"]
 }
